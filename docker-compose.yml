@@ -1,0 +1,73 @@
+networks:
+  sparkpg_network:
+
+
+services:
+
+  spark-master:
+    build: .
+    image: my_first_spark:latest
+    container_name: spark-master
+    hostname: spark-master
+    networks:
+      - sparkpg_network
+    entrypoint: /bin/bash
+    command: -c "/opt/spark/sbin/start-master.sh; tail -f /dev/null"
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    volumes:
+      - spark-events:/opt/spark/events
+      - ./datalake:/datalake
+
+  spark-worker:
+    image: my_first_spark:latest
+    networks:
+      - sparkpg_network
+    depends_on:
+      - spark-master
+    entrypoint: /bin/bash
+    command: -c "/opt/spark/sbin/start-worker.sh spark://spark-master:7077; tail -f /dev/null"
+    volumes:
+      - spark-events:/opt/spark/events
+      - ./datalake:/datalake
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_MEMORY=5G
+
+  spark-history-server:
+    image: my_first_spark:latest
+    container_name: spark-history-server
+    networks:
+      - sparkpg_network
+    depends_on:
+      - spark-master
+    entrypoint: /bin/bash
+    command: -c "/opt/spark/sbin/start-history-server.sh; tail -f /dev/null"
+    ports:
+      - "18080:18080"
+    volumes:
+      - spark-events:/opt/spark/events
+      - ./datalake:/datalake
+
+  jupyter-spark:
+    image: my_first_spark:latest
+    container_name: jupyter-spark
+    networks:
+      - sparkpg_network
+    depends_on:
+      - spark-master
+    entrypoint: /bin/bash
+    command: -c "jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root"
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/workspace
+      - ./datalake:/datalake
+      - ./scripts:/scripts
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+
+volumes:
+  spark-events:
