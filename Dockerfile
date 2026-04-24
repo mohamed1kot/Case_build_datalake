@@ -18,20 +18,25 @@ RUN mkdir -p ${SPARK_HOME} \
 
 WORKDIR ${SPARK_HOME}
 
-ENV SPARK_VERSION=3.5.8
+ENV SPARK_VERSION=3.5.1
 
-RUN curl -L https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz -o spark.tgz && \
+RUN curl -L https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz -o spark.tgz && \
     tar -xvzf spark.tgz --strip-components 1 && \
     rm spark.tgz
 
 RUN pip install --no-cache-dir \
-    pyspark==3.5.8 \
+    pyspark==3.5.1 \
     jupyterlab \
     notebook \
     pandas \
     numpy \
     pyarrow \
     findspark
+
+RUN rm -f /opt/spark/jars/rapids-4-spark*.jar
+
+RUN wget https://repo1.maven.org/maven2/com/nvidia/rapids-4-spark_2.12/24.06.0/rapids-4-spark_2.12-24.06.0.jar \
+    -P /opt/spark/jars/
 
 ENV SPARK_MASTER_PORT="7077"
 ENV SPARK_MASTER_HOST="spark-master"

@@ -27,13 +27,14 @@ CREATE MULTISET TABLE Dim_Identification (
     Iden_SK INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1),
     Person_SK INTEGER NOT NULL,
     ID_Type VARCHAR(25),
-    ID_Value VARCHAR(100),
-    Issue_Date DATE FORMAT 'YYYY-MM-DD' 
+    Person_ID VARCHAR(100),
+    Record_Start_Date DATE FORMAT 'YYYY-MM-DD' DEFAULT CURRENT_DATE,
+    Record_End_Date DATE FORMAT 'YYYY-MM-DD' DEFAULT '9999-12-31',
+    Is_Current BYTEINT DEFAULT 1
 ) UNIQUE PRIMARY INDEX (Iden_SK);
 
 -- Fact_Account_Ownership (Factless Fact --> is caled Factless Fact because it does not have any measures)
 CREATE MULTISET TABLE Fact_Account_Ownership (
     Account_SK INTEGER NOT NULL,
     Person_SK INTEGER NOT NULL,
-    Ownership_Date DATE FORMAT 'YYYY-MM-DD'
 ) PRIMARY INDEX (Account_SK, Person_SK); 
